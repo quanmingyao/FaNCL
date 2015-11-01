@@ -1,0 +1,8 @@
+====== Make ======
+run make.m in MATLAB to compile the mex files
+
+====== Matrix Completion =====
+See demo_mc.m 
+
+====== Multivariate Regression =====
+see demo_regression.m   
