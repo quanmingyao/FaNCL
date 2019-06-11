@@ -44,7 +44,7 @@ clear D;
 
 obj = zeros(maxIter, 1);
 rankIn = zeros(maxIter, 1);
-rankOut = zeros(maxIter, 1);
+rankOt = zeros(maxIter, 1);
 RMSE = zeros(maxIter, 1);
 Time = zeros(maxIter, 1);
 flagTime = tic;
@@ -66,24 +66,24 @@ for i = 1:maxIter
     spa = data - spa';
     setSval(Z, spa, length(spa));
     
-    [ R ] = filterBase( V1, V0, 1e-6*sqrt(i));
+    R = filterBase( V1, V0, 1e-6*sqrt(i));
     rankIn(i) = min(size(R,2), maxR);
     R = R(:, 1:rankIn(i));
-    pwTol = max(lambdaMax*0.95^i, 1e-4);
+
     if(speedup == 1)
-        [Q, pwIter] = powerMethodMatComp( U, V1, Z, R, 3, pwTol);
+        [Q, pwIter] = powerMethodMatComp( U, V1, Z, R, 3, 0);
     else
         if(isempty(R))
             pwIter = 0;
             Q = zeros(size(U,1), 1);
         else
             A = U*V1' + Z;
-            [Q, pwIter] = powerMethod( A, R, 3, pwTol);
+            [Q, pwIter] = powerMethod( A, R, 3, 0);
         end
     end
     hZ = (Q'*U)*V1' + Q'*Z;
     [ U, S, V ] = GSVT(hZ, lambdai, thetai, regType);
-    rankOut(i) = size(V, 2);
+    rankOt(i) = size(V, 2);
     
     U = Q*(U*S);
     V0 = V1;
@@ -93,7 +93,7 @@ for i = 1:maxIter
     obj(i) = obj(i) + funRegC(diag(S), nnz(S), lambda, theta, regType);
 
     if(i > 1)
-        delta = obj(i-1) - obj(i);
+        delta = (obj(i-1) - obj(i))/obj(i);
     else
         delta = inf;
     end
@@ -112,7 +112,7 @@ for i = 1:maxIter
         fprintf('RMSE %.2d \n', RMSE(i));
     end
     
-    if(i> 50 && abs(delta) < tol)
+    if( delta > 0 && delta < tol )
         break;
     end
 end
@@ -120,9 +120,8 @@ end
 output.obj = obj(1:i);
 output.RMSE = RMSE(1:i);
 output.Time = Time(1:i);
-output.rank = nnz(S);
 output.rankin = rankIn(1:i);
-output.rankout = rankOut(1:i);
+output.rankout = rankOt(1:i);
 
 [U, S, V] = svd(U, 'econ');
 V = V1*V;

@@ -27,6 +27,25 @@ switch(regType)
         assert(false);
 end
 
+% switch(regType)
+%     case 1
+%         w = cappedl1_sg(s, theta, lambda);
+%     case 2
+%         disp('not support!\n');
+%     case 3
+%         disp('not support!\n');
+%     case 4
+%         disp('not support!\n');
+%     case 5
+%         w = lambda*ones(size(s));
+%         w(1:theta) = 0;
+%     case 6
+%         disp('not support!\n');
+%     otherwise
+%         disp('not support!\n');
+% end
+% s = s - w;
+
 svs = sum(s > 1e-10);
 
 U = U(:,1:svs);
